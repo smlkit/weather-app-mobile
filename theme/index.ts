@@ -26,10 +26,23 @@ const config: Parameters<typeof extendTheme>[0] = {
     View: {
       variants: {
         page: {
-          flex: 1,
+          flexGrow: 1,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "muted.200",
+        },
+      },
+    },
+    ScrollView: {
+      variants: {
+        page: {
+          flexGrow: 1,
+
+          _contentContainerStyle: {
+            flexGrow: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          },
         },
       },
     },
@@ -37,7 +50,7 @@ const config: Parameters<typeof extendTheme>[0] = {
       baseStyle: () => {
         return {
           _light: { color: "red.500", size: "3xl" },
-          _dark: { color: "emerald.600", size: "3xl" },
+          _dark: { color: "muted.700", size: "3xl" },
         };
       },
       Button: {
