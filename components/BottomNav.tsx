@@ -54,6 +54,7 @@ export const ButtomNav = () => {
           tabBarInactiveTintColor: "#9ca3af",
           headerShown: false,
           tabBarShowLabel: false,
+          tabBarHideOnKeyboard: true,
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} />

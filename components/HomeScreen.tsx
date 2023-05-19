@@ -12,13 +12,13 @@ import {
   ScrollView,
   useColorMode,
 } from "native-base";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useThunkDispatch } from "../core/store/store";
 import {
   fetchLocation,
   fetchLocationSelector,
-  fetchWeather,
-  fetchWeatherSelector,
+  fetchCurrentWeather,
+  fetchCurrentWeatherSelector,
 } from "../core/store/slices/weatherSlice";
 import { useSelector } from "react-redux";
 import { StatusOfRequestEnum } from "../core/types/enums/StatusOfRequestEnum";
@@ -27,18 +27,19 @@ import normalize from "react-native-normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { SimpleLineIcons } from "@expo/vector-icons";
 import { Modalize } from "react-native-modalize";
-import { TouchableOpacity, Dimensions } from "react-native";
-import Modal from "./Modal";
+import { TouchableOpacity, Dimensions, RefreshControl } from "react-native";
+import WeekForecast from "./WeekForecast";
+import TodayForecast from "./TodayForecast";
 
 export const HomeScreen = () => {
   const modalizeRef = useRef<Modalize>(null);
-
+  const [refreshing, setRefreshing] = useState(false);
   const dispatch = useThunkDispatch();
   const { data: location } = useSelector(fetchLocationSelector);
-  const { data, status, error } = useSelector(fetchWeatherSelector);
+  const { data, status, error } = useSelector(fetchCurrentWeatherSelector);
   const [today, setToday] = useState(null);
   const colorMode = useColorMode().colorMode;
-  const color = colorMode === "dark" ? "#f3f4f6" : "#374151";
+  const color = colorMode === "dark" ? "#eff6ff" : "#374151";
 
   useEffect(() => {
     dispatch(fetchLocation());
@@ -47,7 +48,7 @@ export const HomeScreen = () => {
   useEffect(() => {
     if (location) {
       const { latitude: lat, longitude: lon } = location.coords;
-      dispatch(fetchWeather({ lat, lon }));
+      dispatch(fetchCurrentWeather({ lat, lon }));
     }
   }, [location]);
 
@@ -58,12 +59,12 @@ export const HomeScreen = () => {
     }
   }, [data]);
 
-  const onRefresh = () => {
-    if (location) {
-      const { latitude: lat, longitude: lon } = location.coords;
-      dispatch(fetchWeather({ lat, lon }));
-    }
-  };
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   if (status === StatusOfRequestEnum.LOADING || status === StatusOfRequestEnum.IDLE) {
     return (
@@ -84,48 +85,58 @@ export const HomeScreen = () => {
     <View variant="page" _light={{ color: "red.300" }} _dark={{ color: "blue.300" }}>
       <Modalize ref={modalizeRef} adjustToContentHeight={true}>
         <Box height={Dimensions.get("window").height / 1.15}>
-          <Modal />
+          <WeekForecast />
         </Box>
       </Modalize>
-      <ScrollView variant="page" showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-        {data && (
+      <ScrollView
+        variant="page"
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {data && location && (
           <>
+            <Input
+              mb={6}
+              borderColor="blue.500"
+              w={{
+                base: "75%",
+                md: "25%",
+              }}
+              variant="rounded"
+              placeholderTextColor="blue.500"
+              InputLeftElement={
+                <Icon as={<Ionicons name="search" size={24} />} size={5} ml="2" color="blue.500" />
+              }
+              placeholder="Search city"
+            />
+
             <Stack space={2} direction="row" alignItems="baseline">
-              <SimpleLineIcons name="location-pin" size={25} color={color} />
-              <Heading size="xl" mb={2}>
+              {/* <SimpleLineIcons name="location-pin" size={25} color={color} /> */}
+              <Heading size="md" mb={2}>
                 {data.city}
               </Heading>
             </Stack>
-            <Text letterSpacing={3}>{today}</Text>
+            {/* <Text letterSpacing={3}>{today}</Text> */}
             <Box>
               <Image
-                size={normalize(250, "height")}
+                size={normalize(220, "height")}
                 alt="icon"
                 source={{ uri: `https://openweathermap.org/img/wn/${data.icon}@4x.png` }}
               />
             </Box>
 
             <Stack direction="row" alignItems="center" space={4} mb={5}>
-              <Heading size="3xl">{data.temp.toFixed(0)}°C</Heading>
+              <Heading size="4xl" color="blue.50">
+                {data.temp.toFixed(0)}°C
+              </Heading>
               <Box>
                 <Text>{data.description}</Text>
                 <Text>Wind {data.wind.toFixed(0)} km/h</Text>
               </Box>
             </Stack>
 
-            <Input
-              borderColor="coolGray.400"
-              w={{
-                base: "75%",
-                md: "25%",
-              }}
-              variant="rounded"
-              placeholderTextColor="coolGray.400"
-              InputLeftElement={
-                <Icon as={<Ionicons name="search" size={24} />} size={5} ml="2" color="coolGray.400" />
-              }
-              placeholder="Search city"
-            />
+            <TodayForecast lat={location.coords.latitude} lon={location.coords.longitude} />
 
             <Button mt={10} onPress={onOpen}>
               Weekly forecast

@@ -2,8 +2,9 @@ import { PayloadAction, createAsyncThunk, createSelector, createSlice } from "@r
 import { StatusOfRequestEnum } from "../../types/enums/StatusOfRequestEnum";
 import type { RootState } from "../store";
 import { requestForegroundPermissionsAsync, getCurrentPositionAsync, LocationObject } from "expo-location";
+import TodayForecast from "../../../components/TodayForecast";
 
-interface Weather {
+interface CurrentWeather {
   city: string;
   temp: number;
   wind: number;
@@ -12,32 +13,43 @@ interface Weather {
   icon: string;
 }
 
-interface Location {
-  lat: number;
-  lon: number;
+interface TodayForecast {
+  icon: string;
+  temp: number;
+  time: string;
 }
 
 interface weatherSlice {
-  fetchWeather: {
+  fetchCurrentWeather: {
     status: StatusOfRequestEnum;
     error: string | null;
-    data: Weather;
+    data: CurrentWeather;
   };
   fetchLocation: {
     status: StatusOfRequestEnum;
     error: string | null;
     data: LocationObject;
   };
+  fetchTodayForecast: {
+    status: StatusOfRequestEnum;
+    error: string | null;
+    data: TodayForecast[];
+  };
 }
 
 const initialState: weatherSlice = {
-  fetchWeather: {
+  fetchCurrentWeather: {
     data: null,
     status: StatusOfRequestEnum.IDLE,
     error: null,
   },
   fetchLocation: {
     data: null,
+    status: StatusOfRequestEnum.IDLE,
+    error: null,
+  },
+  fetchTodayForecast: {
+    data: [],
     status: StatusOfRequestEnum.IDLE,
     error: null,
   },
@@ -49,20 +61,20 @@ export const weatherSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchWeather.pending, (state) => {
-        state.fetchWeather.status = StatusOfRequestEnum.LOADING;
-        state.fetchWeather.error = null;
-        state.fetchWeather.data = null;
+      .addCase(fetchCurrentWeather.pending, (state) => {
+        state.fetchCurrentWeather.status = StatusOfRequestEnum.LOADING;
+        state.fetchCurrentWeather.error = null;
+        state.fetchCurrentWeather.data = null;
       })
-      .addCase(fetchWeather.fulfilled, (state, action) => {
-        state.fetchWeather.status = StatusOfRequestEnum.SUCCESS;
-        state.fetchWeather.error = null;
-        state.fetchWeather.data = action.payload;
+      .addCase(fetchCurrentWeather.fulfilled, (state, action) => {
+        state.fetchCurrentWeather.status = StatusOfRequestEnum.SUCCESS;
+        state.fetchCurrentWeather.error = null;
+        state.fetchCurrentWeather.data = action.payload;
       })
-      .addCase(fetchWeather.rejected, (state, action) => {
-        state.fetchWeather.error = action.error.message || "unknown error";
-        state.fetchWeather.status = StatusOfRequestEnum.ERROR;
-        state.fetchWeather.data = null;
+      .addCase(fetchCurrentWeather.rejected, (state, action) => {
+        state.fetchCurrentWeather.error = action.error.message || "unknown error";
+        state.fetchCurrentWeather.status = StatusOfRequestEnum.ERROR;
+        state.fetchCurrentWeather.data = null;
       })
       .addCase(fetchLocation.pending, (state) => {
         state.fetchLocation.status = StatusOfRequestEnum.LOADING;
@@ -78,6 +90,21 @@ export const weatherSlice = createSlice({
         state.fetchLocation.error = action.error.message || "unknown error";
         state.fetchLocation.status = StatusOfRequestEnum.ERROR;
         state.fetchLocation.data = null;
+      })
+      .addCase(fetchTodayForecast.pending, (state) => {
+        state.fetchTodayForecast.status = StatusOfRequestEnum.LOADING;
+        state.fetchTodayForecast.error = null;
+        state.fetchTodayForecast.data = null;
+      })
+      .addCase(fetchTodayForecast.fulfilled, (state, action) => {
+        state.fetchTodayForecast.status = StatusOfRequestEnum.SUCCESS;
+        state.fetchTodayForecast.error = null;
+        state.fetchTodayForecast.data = action.payload;
+      })
+      .addCase(fetchTodayForecast.rejected, (state, action) => {
+        state.fetchTodayForecast.error = action.error.message || "unknown error";
+        state.fetchTodayForecast.status = StatusOfRequestEnum.ERROR;
+        state.fetchTodayForecast.data = null;
       });
   },
 });
@@ -98,34 +125,67 @@ export const fetchLocation = createAsyncThunk<LocationObject, void, { rejectValu
   }
 );
 
-export const fetchWeather = createAsyncThunk<Weather, { lat: number; lon: number }, { rejectValue: string }>(
-  "weather/fetchWeather",
-  async ({ lat, lon }, { rejectWithValue }) => {
-    try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=9bef09c5f612d5e9d330f7e944a21f1a&units=metric`
-      );
-      const json = await response.json();
+export const fetchCurrentWeather = createAsyncThunk<
+  CurrentWeather,
+  { lat: number; lon: number },
+  { rejectValue: string }
+>("weather/fetchCurrentWeather", async ({ lat, lon }, { rejectWithValue }) => {
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=9bef09c5f612d5e9d330f7e944a21f1a&units=metric`
+    );
+    const json = await response.json();
 
+    const weather = {
+      city: json.name,
+      temp: json.main.temp,
+      wind: json.wind.speed,
+      timestamp: json.dt,
+      description: json.weather[0].main,
+      icon: json.weather[0].icon,
+    };
+
+    return weather;
+  } catch (error) {
+    console.log("error", error);
+    return rejectWithValue(error);
+  }
+});
+
+export const fetchTodayForecast = createAsyncThunk<
+  TodayForecast[],
+  { lat: number; lon: number },
+  { rejectValue: string }
+>("weather/fetchTodayForecast", async ({ lat, lon }, { rejectWithValue }) => {
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=9bef09c5f612d5e9d330f7e944a21f1a&units=metric`
+    );
+    const json = await response.json();
+
+    const forecast = [];
+
+    for (let i = 0; i <= 5; i++) {
       const weather = {
-        city: json.name,
-        temp: json.main.temp,
-        wind: json.wind.speed,
-        timestamp: json.dt,
-        description: json.weather[0].main,
-        icon: json.weather[0].icon,
+        icon: json.list[i].weather[0].icon,
+        temp: json.list[i].main.temp,
+        time: json.list[i].dt,
       };
 
-      return weather;
-    } catch (error) {
-      console.log("error", error);
-      return rejectWithValue(error);
+      forecast.push(weather);
     }
+
+    return forecast;
+  } catch (error) {
+    console.log("error", error);
+    return rejectWithValue(error);
   }
-);
+});
 
 const selfSelector = (state: RootState) => state.weather;
-export const fetchWeatherSelector = createSelector(selfSelector, (state) => state.fetchWeather);
+export const fetchCurrentWeatherSelector = createSelector(selfSelector, (state) => state.fetchCurrentWeather);
+export const fetchTodayForecastSelector = createSelector(selfSelector, (state) => state.fetchTodayForecast);
+
 export const fetchLocationSelector = createSelector(selfSelector, (state) => state.fetchLocation);
 
 export default weatherSlice.reducer;

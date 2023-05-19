@@ -16,13 +16,13 @@ const config: Parameters<typeof extendTheme>[0] = {
     },
     Text: {
       baseStyle: {
-        _light: { color: "coolGray.500" },
+        _light: { color: "blue.100" },
         _dark: { color: "coolGray.300" },
       },
     },
     View: {
       baseStyle: {
-        _light: { backgroundColor: "coolGray.200" },
+        _light: { backgroundColor: "blue.300" },
         _dark: { backgroundColor: "coolGray.700" },
       },
       variants: {
@@ -50,7 +50,7 @@ const config: Parameters<typeof extendTheme>[0] = {
     Heading: {
       baseStyle: () => {
         return {
-          _light: { color: "coolGray.700", size: "3xl" },
+          _light: { color: "coolGray.50", size: "3xl" },
           _dark: { color: "coolGray.100", size: "3xl" },
         };
       },
