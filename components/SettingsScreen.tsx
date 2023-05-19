@@ -1,19 +1,16 @@
-import { View, Text } from "react-native";
-import { IconButton, useColorMode } from "native-base";
+import { useColorMode, Button, View, Text } from "native-base";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 export const SettingsScreen = () => {
   const { colorMode, toggleColorMode } = useColorMode();
+  const btnText = colorMode === "dark" ? "Light mode" : "Dark mode";
   const iconName = colorMode === "dark" ? "sunny" : "moon";
+
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <IconButton
-        variant="solid"
-        size="lg"
-        borderRadius="full"
-        icon={<Ionicons name={iconName} />}
-        onPress={toggleColorMode}
-      ></IconButton>
+      <Button leftIcon={<Ionicons name={iconName} as="Ionicons" color="#f9fafb" />} onPress={toggleColorMode}>
+        {btnText}
+      </Button>
     </View>
   );
 };

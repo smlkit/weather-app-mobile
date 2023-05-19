@@ -7,23 +7,24 @@ const config: Parameters<typeof extendTheme>[0] = {
   },
   components: {
     Button: {
-      baseStyle: {
-        rounded: "md",
-      },
       defaultProps: {
-        backgroundColor: "emerald.600",
         borderRadius: "full",
         paddingLeft: "30px",
         paddingRight: "30px",
+        backgroundColor: "blue.500",
       },
     },
     Text: {
       baseStyle: {
-        _light: { color: "muted.500" },
-        _dark: { color: "muted.500" },
+        _light: { color: "coolGray.500" },
+        _dark: { color: "coolGray.300" },
       },
     },
     View: {
+      baseStyle: {
+        _light: { backgroundColor: "coolGray.200" },
+        _dark: { backgroundColor: "coolGray.700" },
+      },
       variants: {
         page: {
           flexGrow: 1,
@@ -49,16 +50,22 @@ const config: Parameters<typeof extendTheme>[0] = {
     Heading: {
       baseStyle: () => {
         return {
-          _light: { color: "red.500", size: "3xl" },
-          _dark: { color: "muted.700", size: "3xl" },
+          _light: { color: "coolGray.700", size: "3xl" },
+          _dark: { color: "coolGray.100", size: "3xl" },
         };
       },
       Button: {
         baseStyle: () => {
           return {
-            _light: { backgrounColor: "red.500" },
-            _dark: { backgroundColor: "blue.500" },
+            _light: { backgrounColor: "coolGray.700", color: "muted.300" },
+            _dark: { backgroundColor: "coolGray.400", color: "muted.700" },
           };
+        },
+      },
+      SimpleLineIcons: {
+        baseStyle: {
+          _light: { color: "coolGray.200" },
+          _dark: { color: "coolGray.700" },
         },
       },
     },

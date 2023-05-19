@@ -10,8 +10,9 @@ import {
   Icon,
   Spinner,
   ScrollView,
+  useColorMode,
 } from "native-base";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useThunkDispatch } from "../core/store/store";
 import {
   fetchLocation,
@@ -24,12 +25,20 @@ import { StatusOfRequestEnum } from "../core/types/enums/StatusOfRequestEnum";
 import * as dayjs from "dayjs";
 import normalize from "react-native-normalize";
 import { Ionicons } from "@expo/vector-icons";
+import { SimpleLineIcons } from "@expo/vector-icons";
+import { Modalize } from "react-native-modalize";
+import { TouchableOpacity, Dimensions } from "react-native";
+import Modal from "./Modal";
 
 export const HomeScreen = () => {
+  const modalizeRef = useRef<Modalize>(null);
+
   const dispatch = useThunkDispatch();
   const { data: location } = useSelector(fetchLocationSelector);
   const { data, status, error } = useSelector(fetchWeatherSelector);
   const [today, setToday] = useState(null);
+  const colorMode = useColorMode().colorMode;
+  const color = colorMode === "dark" ? "#f3f4f6" : "#374151";
 
   useEffect(() => {
     dispatch(fetchLocation());
@@ -60,22 +69,33 @@ export const HomeScreen = () => {
     return (
       <View variant="page">
         <Stack space={5}>
-          <Spinner accessibilityLabel="Loading weather" color="muted.700" size="lg" />
+          <Spinner accessibilityLabel="Loading weather" color="blue.500" size="lg" />
           <Heading size="sm">Loading, please wait...</Heading>
         </Stack>
       </View>
     );
   }
 
+  const onOpen = () => {
+    modalizeRef.current?.open();
+  };
+
   return (
-    <View variant="page">
+    <View variant="page" _light={{ color: "red.300" }} _dark={{ color: "blue.300" }}>
+      <Modalize ref={modalizeRef} adjustToContentHeight={true}>
+        <Box height={Dimensions.get("window").height / 1.15}>
+          <Modal />
+        </Box>
+      </Modalize>
       <ScrollView variant="page" showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
         {data && (
           <>
-            <Heading size="xl" mb={2}>
-              <Ionicons name="location-outline" size={27} />
-              {data.city}
-            </Heading>
+            <Stack space={2} direction="row" alignItems="baseline">
+              <SimpleLineIcons name="location-pin" size={25} color={color} />
+              <Heading size="xl" mb={2}>
+                {data.city}
+              </Heading>
+            </Stack>
             <Text letterSpacing={3}>{today}</Text>
             <Box>
               <Image
@@ -94,21 +114,22 @@ export const HomeScreen = () => {
             </Stack>
 
             <Input
+              borderColor="coolGray.400"
               w={{
                 base: "75%",
                 md: "25%",
               }}
               variant="rounded"
-              placeholderTextColor="muted.400"
+              placeholderTextColor="coolGray.400"
               InputLeftElement={
-                <Icon as={<Ionicons name="search" size={24} />} size={5} ml="2" color="muted.400" />
+                <Icon as={<Ionicons name="search" size={24} />} size={5} ml="2" color="coolGray.400" />
               }
               placeholder="Search city"
             />
 
-            {/* <Button marginTop="20px" onPress={onRefresh}>
-            Refresh
-          </Button> */}
+            <Button mt={10} onPress={onOpen}>
+              Weekly forecast
+            </Button>
           </>
         )}
       </ScrollView>
