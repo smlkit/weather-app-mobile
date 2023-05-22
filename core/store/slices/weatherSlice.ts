@@ -163,17 +163,9 @@ export const fetchTodayForecast = createAsyncThunk<
     );
     const json = await response.json();
 
-    const forecast = [];
-
-    for (let i = 0; i <= 5; i++) {
-      const weather = {
-        icon: json.list[i].weather[0].icon,
-        temp: json.list[i].main.temp,
-        time: json.list[i].dt,
-      };
-
-      forecast.push(weather);
-    }
+    const forecast = json.list
+      .slice(0, 10)
+      .map((el) => ({ icon: el.weather[0].icon, temp: el.main.temp, time: el.dt }));
 
     return forecast;
   } catch (error) {
@@ -181,6 +173,28 @@ export const fetchTodayForecast = createAsyncThunk<
     return rejectWithValue(error);
   }
 });
+
+// export const fetchWeekForecast = createAsyncThunk<
+//   WeekForecast[],
+//   { lat: number; lon: number },
+//   { rejectValue: string }
+// >("weather/fetchWeekForecast", async ({ lat, lon }, { rejectWithValue }) => {
+//   try {
+//     const response = await fetch(
+//       `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=9bef09c5f612d5e9d330f7e944a21f1a&units=metric`
+//     );
+//     const json = await response.json();
+
+//     const forecast = json.list
+//       .slice(0, 6)
+//       .map((el) => ({ icon: el.weather[0].icon, temp: el.main.temp, time: el.dt }));
+
+//     return forecast;
+//   } catch (error) {
+//     console.log("error", error);
+//     return rejectWithValue(error);
+//   }
+// });
 
 const selfSelector = (state: RootState) => state.weather;
 export const fetchCurrentWeatherSelector = createSelector(selfSelector, (state) => state.fetchCurrentWeather);

@@ -6,8 +6,6 @@ import {
   Image,
   Box,
   Stack,
-  Input,
-  Icon,
   Spinner,
   ScrollView,
   useColorMode,
@@ -24,19 +22,18 @@ import { useSelector } from "react-redux";
 import { StatusOfRequestEnum } from "../core/types/enums/StatusOfRequestEnum";
 import * as dayjs from "dayjs";
 import normalize from "react-native-normalize";
-import { Ionicons } from "@expo/vector-icons";
-import { SimpleLineIcons } from "@expo/vector-icons";
 import { Modalize } from "react-native-modalize";
-import { TouchableOpacity, Dimensions, RefreshControl } from "react-native";
+import { Dimensions, RefreshControl } from "react-native";
 import WeekForecast from "./WeekForecast";
 import TodayForecast from "./TodayForecast";
+import Search from "./Search";
 
 export const HomeScreen = () => {
   const modalizeRef = useRef<Modalize>(null);
   const [refreshing, setRefreshing] = useState(false);
   const dispatch = useThunkDispatch();
   const { data: location } = useSelector(fetchLocationSelector);
-  const { data, status, error } = useSelector(fetchCurrentWeatherSelector);
+  const { data, status } = useSelector(fetchCurrentWeatherSelector);
   const [today, setToday] = useState(null);
   const colorMode = useColorMode().colorMode;
   const color = colorMode === "dark" ? "#eff6ff" : "#374151";
@@ -96,20 +93,7 @@ export const HomeScreen = () => {
       >
         {data && location && (
           <>
-            <Input
-              mb={6}
-              borderColor="blue.500"
-              w={{
-                base: "75%",
-                md: "25%",
-              }}
-              variant="rounded"
-              placeholderTextColor="blue.500"
-              InputLeftElement={
-                <Icon as={<Ionicons name="search" size={24} />} size={5} ml="2" color="blue.500" />
-              }
-              placeholder="Search city"
-            />
+            <Search />
 
             <Stack space={2} direction="row" alignItems="baseline">
               {/* <SimpleLineIcons name="location-pin" size={25} color={color} /> */}
