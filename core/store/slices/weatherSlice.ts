@@ -2,7 +2,6 @@ import { PayloadAction, createAsyncThunk, createSelector, createSlice } from "@r
 import { StatusOfRequestEnum } from "../../types/enums/StatusOfRequestEnum";
 import type { RootState } from "../store";
 import { requestForegroundPermissionsAsync, getCurrentPositionAsync, LocationObject } from "expo-location";
-import TodayForecast from "../../../components/TodayForecast";
 
 interface CurrentWeather {
   city: string;
@@ -11,6 +10,8 @@ interface CurrentWeather {
   timestamp: number;
   description: string;
   icon: string;
+  lat: number;
+  lon: number;
 }
 
 interface TodayForecast {
@@ -143,6 +144,8 @@ export const fetchCurrentWeather = createAsyncThunk<
       timestamp: json.dt,
       description: json.weather[0].main,
       icon: json.weather[0].icon,
+      lat: lat,
+      lon: lon,
     };
 
     return weather;
@@ -162,11 +165,12 @@ export const fetchTodayForecast = createAsyncThunk<
       `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=9bef09c5f612d5e9d330f7e944a21f1a&units=metric`
     );
     const json = await response.json();
-
+    console.log(json);
     const forecast = json.list
       .slice(0, 10)
       .map((el) => ({ icon: el.weather[0].icon, temp: el.main.temp, time: el.dt }));
 
+    console.log(forecast);
     return forecast;
   } catch (error) {
     console.log("error", error);
