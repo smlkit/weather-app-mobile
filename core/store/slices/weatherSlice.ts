@@ -5,6 +5,7 @@ import { requestForegroundPermissionsAsync, getCurrentPositionAsync, LocationObj
 
 interface CurrentWeather {
   city: string;
+  country: string;
   temp: number;
   wind: number;
   timestamp: number;
@@ -139,6 +140,7 @@ export const fetchCurrentWeather = createAsyncThunk<
 
     const weather = {
       city: json.name,
+      country: json.sys.country,
       temp: json.main.temp,
       wind: json.wind.speed,
       timestamp: json.dt,

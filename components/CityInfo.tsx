@@ -3,6 +3,7 @@ import TodayForecast from "./TodayForecast";
 import { Box, Button, Heading, Stack, Text, Image } from "native-base";
 import normalize from "react-native-normalize";
 import { Modalize } from "react-native-modalize";
+import dayjs from "dayjs";
 
 const CityInfo = ({ data, lat, lon }) => {
   const modalizeRef = useRef<Modalize>(null);
@@ -13,9 +14,9 @@ const CityInfo = ({ data, lat, lon }) => {
 
   return (
     <>
-      <Stack space={2} direction="row" alignItems="baseline">
+      <Stack space={2} direction="row" alignItems="baseline" mt={6}>
         <Heading size="md" mb={2}>
-          {data.city}
+          {data.city}, {data.country}
         </Heading>
       </Stack>
       <Box>
